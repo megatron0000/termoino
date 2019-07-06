@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en" ng-app="ArduinoDataLogging">
+<!--
+
+Page    : index / MobApp
+Version : 1.0
+Author  : Colorlib
+URI     : https://colorlib.com
+
+ -->
+
+<head>
+    <title>TERMOINO</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Font -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <!-- Themify Icons -->
+    <link rel="stylesheet" href="css/themify-icons.css">
+    <!-- Owl carousel -->
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <!-- Main css -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body data-spy="scroll" data-target="#navbar" data-offset="30">
+
+    <!-- Nav Menu -->
+
+    <div class="nav-menu fixed-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <nav class="navbar navbar-dark navbar-expand-lg">
+                        <a class="navbar-brand" href="#">TERMOINO</a>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
+                            aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation"> <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbar">
+                            <ul class="navbar-nav ml-auto">
+                                <li class="nav-item"> <a class="nav-link active" href="#inicio">INÍCIO </a></li>
+                                <li class="nav-item"> <a class="nav-link" href="#status">STATUS</a> </li>
+                                <li class="nav-item"> <a class="nav-link" href="#carregar">IMPORTAÇÃO</a> </li>
+                                <li class="nav-item"> <a class="nav-link" href="#visualizacao">VISUALIZAÇÃO</a> </li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <header class="bg-gradient pb-5" id="inicio">
+        <div class="container mt-5">
+            <h1>Monitoramento de temperatura e umidade</h1>
+            <p class="tagline">Verifique se o Arduino está conectado, importe as medições já feitas e as visualize</p>
+        </div>
+    </header>
+
+
+    <div class="section light-bg" id="status" ng-controller="StatusController">
+
+
+        <div class="container">
+
+            <div class="section-title">
+                <small>CONECTIVIDADE</small>
+                <h3>Status do Arduino</h3>
+            </div>
+
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card features">
+                        <div class="card-body">
+                            <div class="media">
+                                <span class="gradient-fill ti-3x mr-3" ng-class="is_connected ? 'ti-face-smile' : 'ti-face-sad'"></span>
+                                <div class="media-body">
+                                    <h4 class="card-title" style="line-height: 2em">O Arduino está... <span class="rounded p-1"
+                                            ng-class="is_connected ? 'bg-success' : 'bg-danger'" ng-style:>{{
+                                            is_connected ? "CONECTADO" : "DESCONECTADO" }}</span></h4>
+                                    <p class="card-text" ng-show="is_connected">O Arduino foi reconhecido na porta USB</p>
+                                    <p class="card-text" ng-show="!is_connected">O Arduino não está conectado no
+                                        computador, ou não foi reconhecido (nesse caso, tente o remover e o inserir de
+                                        novo). Quando pronto, clique no botão para tentar a conexão</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button ng-click="connect()" ng-disabled="is_connected" type="button" class="btn btn-primary btn-lg btn-block mb-4 mt-4"
+                        ng-class="is_connected ? 'crosshair-on-hover' : 'pointer-on-hover'">Clique
+                        para conectar</button>
+                </div>
+            </div>
+
+        </div>
+
+
+
+    </div>
+    <!-- // end .section -->
+
+
+    <div class="section light-bg" id="carregar" ng-controller="DataImportController">
+        <div class="container">
+            <div class="section-title">
+                <small>DOWNLOAD</small>
+                <h3>Carregar histórico de medições</h3>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card features">
+                        <div class="card-body">
+                            <div class="media">
+                                <span class="gradient-fill ti-3x mr-3" ng-class="is_connected ? 'ti-face-smile' : 'ti-face-sad'"></span>
+                                <div class="media-body">
+                                    <div ng-show="!(importing || saving)">
+                                        <h4 class="card-title" style="line-height: 2em">{{is_connected ?
+                                            'Há '
+                                            + new_record_count +
+                                            ' novas medições a importar' : 'O Arduino está desconectado'}}
+                                        </h4>
+                                        <p class="card-text" ng-show="is_connected && new_record_count !== 0 && !last_result_error">Clique
+                                            para as
+                                            importar
+                                        </p>
+                                        <p class="card-text" ng-class="last_result_error ? 'text-danger' : 'text-success'">
+                                            {{last_result_message}}
+                                        </p>
+                                    </div>
+                                    <div ng-show="is_connected && (importing || saving)">
+                                        <h4 class="card-title" style="line-height: 2em">
+                                            {{ importing ? "Importando..." : "Salvando..." }}
+                                        </h4>
+                                        <div class="progress" style="height: 22px;">
+                                            <div class="progress-bar" ng-style="{'width': progress + '%'}">{{progress}}%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12" ng-show="is_connected">
+                    <button ng-click="import()" ng-disabled="new_record_count === 0 || importing" type="button" class="btn btn-primary btn-lg btn-block mb-4 mt-4"
+                        ng-class="new_record_count === 0 || importing ? 'crosshair-on-hover' : 'pointer-on-hover'">Importar
+                        medições</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <!-- // end .section -->
+
+    <div class="section light-bg" id="visualizacao" ng-controller="VisualizationController">
+        <div class="container">
+            <div class="section-title">
+                <small>GRÁFICOS</small>
+                <h3>Veja o que o Arduino já mediu</h3>
+            </div>
+
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#ultima-semana">Diário</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#graph2">Nada</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#graph3">Nada</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#graph4">Nada</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="ultima-semana">
+                    <div id="ultima-semana-container">
+
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="graph2">
+                    <div class="d-flex flex-column flex-lg-row justify-content-around">
+                        <div>
+                            <h2>Nada aqui 1</h2>
+                        </div>
+                        <div>
+                            <h1>Por enquanto...</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="graph3">
+                    <div class="d-flex flex-column flex-lg-row justify-content-around">
+                        <div>
+                            <h2>Nada aqui 2</h2>
+                        </div>
+                        <div>
+                            <h1>Por enquanto...</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="graph4">
+                    <div class="d-flex flex-column flex-lg-row justify-content-around">
+                        <div>
+                            <h2>Nada aqui 3</h2>
+                        </div>
+                        <div>
+                            <h1>Por enquanto...</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+    <!-- // end .section -->
+
+
+    <footer class="my-5 text-center">
+        <!-- Copyright removal is not prohibited! -->
+        <p class="mb-2"><small>COPYRIGHT © 2017. ALL RIGHTS RESERVED. MOBAPP TEMPLATE BY <a href="https://colorlib.com">COLORLIB</a></small></p>
+    </footer>
+
+    <!-- jQuery and Bootstrap -->
+    <script>
+        window.$ = window.jQuery = require('./js/jquery-3.2.1.min.js');
+    </script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <!-- Plugins JS -->
+    <script src="js/owl.carousel.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        Date.DAYNAMES = 'Domingo Segunda Terça Quarta Quinta Sexta Sábado'.split(' ');
+        Date.MONTHNAMES = 'Janeiro Fevereiro Março Abril Maio Junho Julho Agosto Setembro Outubro Novembro Dezembro'.split(' ')
+        window.Highcharts = require('./js/highcharts/highstock')
+        Highcharts.setOptions({
+            global: {
+                useUTC: true
+            },
+            lang: {
+                months: Date.MONTHNAMES,
+                weekdays: Date.DAYNAMES
+            }
+        })
+    </script>
+    <script>
+        require('./js/highcharts/modules/exporting.js')(Highcharts)
+    </script>
+    <script>
+        require('./js/highcharts/modules/series-label.js')(Highcharts)
+    </script>
+
+    <script>
+            // Add y panning capability
+            (function (H) {
+                H.wrap(H.Chart.prototype, 'pan', function (proceed) {
+                    var chart = this,
+                        hoverPoints = chart.hoverPoints,
+                        doRedraw,
+                        e = arguments[1],
+                        each = H.each;
+
+                    // remove active points for shared tooltip
+                    if (hoverPoints) {
+                        each(hoverPoints, function (point) {
+                            point.setState();
+                        });
+                    }
+
+                    var mousePosX = e.chartX,
+                        mousePosY = e.chartY,
+                        xAxis = chart.xAxis[0],
+                        yAxis = chart.yAxis[0],
+                        startPosX = chart.mouseDownX,
+                        startPosY = chart.mouseDownY,
+                        halfPointRangeX = (xAxis.pointRange || 0) / 2,
+                        halfPointRangeY = (yAxis.pointRange || 0) / 2,
+                        extremesX = xAxis.getExtremes(),
+                        newMinX = xAxis.toValue(startPosX - mousePosX, true) + halfPointRangeX,
+                        newMaxX = xAxis.toValue(startPosX + chart.plotWidth - mousePosX, true) - halfPointRangeX,
+                        extremesY = yAxis.startingExtremes,
+                        newMaxY = yAxis.toValue(startPosY - mousePosY, true) + halfPointRangeY,
+                        newMinY = yAxis.toValue(startPosY + chart.plotHeight - mousePosY, true) - halfPointRangeY;
+
+                    if (xAxis.series.length && newMinX > Math.min(extremesX.dataMin, extremesX.min) && newMaxX < Math.max(extremesX.dataMax, extremesX.max) && newMinY > Math.min(extremesY.dataMin, extremesY.min) && newMaxY < Math.max(extremesY.dataMax, extremesY.max)) {
+                        xAxis.setExtremes(newMinX, newMaxX, false, false, {
+                            trigger: 'pan'
+                        });
+                        yAxis.setExtremes(newMinY, newMaxY, false, false, {
+                            trigger: 'pan'
+                        });
+                        doRedraw = true;
+                    }
+
+                    chart.mouseDownX = mousePosX;
+                    chart.mouseDownY = mousePosY;// set new reference for next run
+
+                    if (doRedraw) {
+                        chart.redraw(false);
+                    }
+                });
+
+            }(Highcharts));
+
+    </script>
+
+    <script src="../node_modules/angular/angular.js"></script>
+    <script src="js/script.js"></script>
+    <script src="domain-logic.js"></script>
+
+</body>
+
+</html>
