@@ -15,3 +15,7 @@ Enter ``node_modules/sqlite`` and do ``../.bin/node-pre-gyp install --runtime=el
 ## serialport
 
 Get binary for electron 2.0.16 (v57, if I am not mistaken. Data for this [here](https://www.npmjs.com/package/electron-releases)) from [here](https://github.com/node-serialport/node-serialport/releases) (check if this release of serialport is the same as the one on package.json)
+
+## ESP32 programming guide
+
+[Here](https://github.com/espressif/arduino-esp32/tree/master/libraries)
