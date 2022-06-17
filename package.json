@@ -15,7 +15,7 @@
     "sqlite3": "^4.0.9"
   },
   "devDependencies": {
-    "electron": "^2.0.16"
+    "electron": "^15.5.5"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
